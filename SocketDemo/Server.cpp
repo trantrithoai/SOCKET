@@ -29,7 +29,7 @@ void catch_ctrl_c_and_exit(int sig)
         root = root->link;
         free(tmp);
     }
-    printf("Bye\n");
+    printf("See you again!!!\n");
     exit(EXIT_SUCCESS);
 }
 
@@ -40,7 +40,6 @@ void send_to_all_clients(ClientList* np, char tmp_buffer[])
     {
         if (np->data != tmp->data)  // all clients except itself.
         {
-            printf("Send to sockfd %d: \"%s\" \n", tmp->data, tmp_buffer);
             send(tmp->data, tmp_buffer, LENGTH_SEND, 0);
         }
         tmp = tmp->link;
@@ -58,14 +57,14 @@ void* client_handler(void* p_client)
     // Naming
     if (recv(np->data, nickname, LENGTH_NAME, 0) <= 0 || strlen(nickname) < 2 || strlen(nickname) >= LENGTH_NAME - 1) 
     {
-        printf("%s didn't input name.\n", np->ip);
+        printf("%s didn't input name\n", np->ip);
         leave_flag = 1;
     }
     else 
     {
         strncpy(np->name, nickname, LENGTH_NAME);
-        printf("%s(%s)(%d) join the chatroom.\n", np->name, np->ip, np->data);
-        sprintf(send_buffer, "%s(%s) join the chatroom.", np->name, np->ip);
+        printf("%s join the chatroom\n", np->name);
+        sprintf(send_buffer, "%s join the chatroom\n", np->name);
         send_to_all_clients(np, send_buffer);
     }
 
@@ -83,17 +82,19 @@ void* client_handler(void* p_client)
             {
                 continue;
             }
-            sprintf(send_buffer, "%s：%s from %s", np->name, recv_buffer, np->ip);
+            sprintf(send_buffer, "%s", recv_buffer);
+            printf("%s\n", recv_buffer);
         }
         else if (receive == 0 || strcmp(recv_buffer, "exit") == 0) 
         {
-            printf("%s(%s)(%d) leave the chatroom.\n", np->name, np->ip, np->data);
-            sprintf(send_buffer, "%s(%s) leave the chatroom.", np->name, np->ip);
+            printf("%s leave the chatroom\n", np->name);
+            sprintf(send_buffer, "%s leave the chatroom\n", np->name);
             leave_flag = 1;
         }
         else 
         {
-            printf("Fatal Error: -1\n");
+            printf("%s leave the chatroom\n", np->name);
+            sprintf(send_buffer, "%s leave the chatroom\n", np->name);
             leave_flag = 1;
         }
         send_to_all_clients(np, send_buffer);
@@ -113,10 +114,8 @@ void* client_handler(void* p_client)
     return NULL;
 }
 
-
 int main()
 {
-
     signal(SIGINT, catch_ctrl_c_and_exit);
 
     WSADATA wsa;
@@ -129,10 +128,11 @@ int main()
     // Create socket
     server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_sockfd == -1) {
-        printf("Fail to create a socket.");
+        printf("Fail to create a socket");
         exit(EXIT_FAILURE);
 
     }
+    printf("Create Server successfull!!!\n");
 
     // Socket information
     struct sockaddr_in server_info, client_info;
@@ -150,8 +150,8 @@ int main()
 
     // Print Server IP
     getsockname(server_sockfd, (struct sockaddr*)&server_info, &s_addrlen);
-    printf("Start Server on: %s\n", inet_ntoa(server_info.sin_addr));
-    printf("Port: %d\n", ntohs(server_info.sin_port));
+    printf("Start Server on port: %d\n", ntohs(server_info.sin_port));
+    printf("=== WELCOME TO THE CHATROOM ===\n");
 
     // Initial linked list for clients
     root = newNode(server_sockfd, inet_ntoa(server_info.sin_addr));
@@ -162,7 +162,7 @@ int main()
 
         // Print Client IP
         getpeername(client_sockfd, (struct sockaddr*)&client_info, &c_addrlen);
-        printf("Client %s:%d come in.\n", inet_ntoa(client_info.sin_addr), ntohs(client_info.sin_port));
+        //printf("Client %s:%d come in.\n", inet_ntoa(client_info.sin_addr), ntohs(client_info.sin_port));
 
         // Append linked list for clients
         ClientList* c = newNode(client_sockfd, inet_ntoa(client_info.sin_addr));
