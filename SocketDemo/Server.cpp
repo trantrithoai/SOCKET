@@ -64,7 +64,7 @@ void* client_handler(void* p_client)
     {
         strncpy(np->name, nickname, LENGTH_NAME);
         printf("%s join the chatroom\n", np->name);
-        sprintf(send_buffer, "%s join the chatroom\n", np->name);
+        sprintf(send_buffer, "%s join the chatroom", np->name);
         send_to_all_clients(np, send_buffer);
     }
 
@@ -88,13 +88,13 @@ void* client_handler(void* p_client)
         else if (receive == 0 || strcmp(recv_buffer, "exit") == 0) 
         {
             printf("%s leave the chatroom\n", np->name);
-            sprintf(send_buffer, "%s leave the chatroom\n", np->name);
+            sprintf(send_buffer, "%s leave the chatroom", np->name);
             leave_flag = 1;
         }
         else 
         {
             printf("%s leave the chatroom\n", np->name);
-            sprintf(send_buffer, "%s leave the chatroom\n", np->name);
+            sprintf(send_buffer, "%s leave the chatroom", np->name);
             leave_flag = 1;
         }
         send_to_all_clients(np, send_buffer);
@@ -102,11 +102,13 @@ void* client_handler(void* p_client)
 
     // Remove Node
     closesocket(np->data);
-    if (np == now) { // remove an edge node
+    if (np == now) // remove an edge node
+    { 
         now = np->prev;
         now->link = NULL;
     }
-    else { // remove a middle node
+    else // remove a middle node
+    {
         np->prev->link = np->link;
         np->link->prev = np->prev;
     }
@@ -162,7 +164,6 @@ int main()
 
         // Print Client IP
         getpeername(client_sockfd, (struct sockaddr*)&client_info, &c_addrlen);
-        //printf("Client %s:%d come in.\n", inet_ntoa(client_info.sin_addr), ntohs(client_info.sin_port));
 
         // Append linked list for clients
         ClientList* c = newNode(client_sockfd, inet_ntoa(client_info.sin_addr));
