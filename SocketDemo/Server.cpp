@@ -29,7 +29,7 @@ void catch_ctrl_c_and_exit(int sig)
         root = root->link;
         free(tmp);
     }
-    printf("See you again!!!\n");
+    printf("Bye. See you again!!!\n");
     exit(EXIT_SUCCESS);
 }
 
