@@ -4,8 +4,6 @@
 #define PTW32_STATIC_LIB
 
 #pragma comment(lib, "Ws2_32.lib")
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,9 +18,11 @@
 int server_sockfd = 0, client_sockfd = 0;
 ClientList* root, * now;
 
-void catch_ctrl_c_and_exit(int sig) {
+void catch_ctrl_c_and_exit(int sig)
+{
     ClientList* tmp;
-    while (root != NULL) {
+    while (root != NULL) 
+    {
         printf("\nClose socketfd: %d\n", root->data);
         closesocket(root->data); // close all socket include server_sockfd
         tmp = root;
@@ -33,10 +33,13 @@ void catch_ctrl_c_and_exit(int sig) {
     exit(EXIT_SUCCESS);
 }
 
-void send_to_all_clients(ClientList* np, char tmp_buffer[]) {
+void send_to_all_clients(ClientList* np, char tmp_buffer[]) 
+{
     ClientList* tmp = root->link;
-    while (tmp != NULL) {
-        if (np->data != tmp->data) { // all clients except itself.
+    while (tmp != NULL) 
+    {
+        if (np->data != tmp->data)  // all clients except itself.
+        {
             printf("Send to sockfd %d: \"%s\" \n", tmp->data, tmp_buffer);
             send(tmp->data, tmp_buffer, LENGTH_SEND, 0);
         }
@@ -44,7 +47,8 @@ void send_to_all_clients(ClientList* np, char tmp_buffer[]) {
     }
 }
 
-void* client_handler(void* p_client) {
+void* client_handler(void* p_client) 
+{
     int leave_flag = 0;
     char nickname[LENGTH_NAME] = {};
     char recv_buffer[LENGTH_MSG] = {};
@@ -52,11 +56,13 @@ void* client_handler(void* p_client) {
     ClientList* np = (ClientList*)p_client;
 
     // Naming
-    if (recv(np->data, nickname, LENGTH_NAME, 0) <= 0 || strlen(nickname) < 2 || strlen(nickname) >= LENGTH_NAME - 1) {
+    if (recv(np->data, nickname, LENGTH_NAME, 0) <= 0 || strlen(nickname) < 2 || strlen(nickname) >= LENGTH_NAME - 1) 
+    {
         printf("%s didn't input name.\n", np->ip);
         leave_flag = 1;
     }
-    else {
+    else 
+    {
         strncpy(np->name, nickname, LENGTH_NAME);
         printf("%s(%s)(%d) join the chatroom.\n", np->name, np->ip, np->data);
         sprintf(send_buffer, "%s(%s) join the chatroom.", np->name, np->ip);
@@ -64,23 +70,29 @@ void* client_handler(void* p_client) {
     }
 
     // Conversation
-    while (1) {
-        if (leave_flag) {
+    while (true)
+    {
+        if (leave_flag) 
+        {
             break;
         }
         int receive = recv(np->data, recv_buffer, LENGTH_MSG, 0);
-        if (receive > 0) {
-            if (strlen(recv_buffer) == 0) {
+        if (receive > 0) 
+        {
+            if (strlen(recv_buffer) == 0) 
+            {
                 continue;
             }
             sprintf(send_buffer, "%s：%s from %s", np->name, recv_buffer, np->ip);
         }
-        else if (receive == 0 || strcmp(recv_buffer, "exit") == 0) {
+        else if (receive == 0 || strcmp(recv_buffer, "exit") == 0) 
+        {
             printf("%s(%s)(%d) leave the chatroom.\n", np->name, np->ip, np->data);
             sprintf(send_buffer, "%s(%s) leave the chatroom.", np->name, np->ip);
             leave_flag = 1;
         }
-        else {
+        else 
+        {
             printf("Fatal Error: -1\n");
             leave_flag = 1;
         }
@@ -130,7 +142,7 @@ int main()
     memset(&client_info, 0, c_addrlen);
     server_info.sin_family = PF_INET;
     server_info.sin_addr.s_addr = INADDR_ANY;
-    server_info.sin_port = htons(8888);
+    server_info.sin_port = htons(8888); //Port=8888
 
     // Bind and Listen
     bind(server_sockfd, (struct sockaddr*)&server_info, s_addrlen);
@@ -138,7 +150,8 @@ int main()
 
     // Print Server IP
     getsockname(server_sockfd, (struct sockaddr*)&server_info, &s_addrlen);
-    printf("Start Server on: %s:%d\n", inet_ntoa(server_info.sin_addr), ntohs(server_info.sin_port));
+    printf("Start Server on: %s\n", inet_ntoa(server_info.sin_addr));
+    printf("Port: %d\n", ntohs(server_info.sin_port));
 
     // Initial linked list for clients
     root = newNode(server_sockfd, inet_ntoa(server_info.sin_addr));
