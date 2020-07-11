@@ -14,6 +14,8 @@
 #include "Server.h"
 #include <WinSock2.h>
 
+#define bzero(b,len) (memset((b), '\0', (len)), (void) 0)
+
 // Global variables
 int server_sockfd = 0, client_sockfd = 0;
 ClientList* root, * now;
@@ -63,8 +65,8 @@ void* client_handler(void* p_client)
     else 
     {
         strncpy(np->name, nickname, LENGTH_NAME);
-        printf("%s join the chatroom\n", np->name);
-        sprintf(send_buffer, "%s join the chatroom", np->name);
+        printf("%s(%d) join the chatroom\n", np->name, np->data);
+        sprintf(send_buffer, "%s(%d) join the chatroom", np->name, np->data);
         send_to_all_clients(np, send_buffer);
     }
 
@@ -82,19 +84,21 @@ void* client_handler(void* p_client)
             {
                 continue;
             }
-            sprintf(send_buffer, "%s", recv_buffer);
-            printf("%s\n", recv_buffer);
+            sprintf(send_buffer, "%s(%d): %s", np->name, np->data, recv_buffer);
+            printf("%s(%d): %s\n", np->name, np->data, recv_buffer);
+
+            bzero(recv_buffer, LENGTH_MSG);
         }
         else if (receive == 0 || strcmp(recv_buffer, "exit") == 0) 
         {
-            printf("%s leave the chatroom\n", np->name);
-            sprintf(send_buffer, "%s leave the chatroom", np->name);
+            printf("%s(%d) leave the chatroom\n", np->name, np->data);
+            sprintf(send_buffer, "%s(%d) leave the chatroom", np->name, np->data);
             leave_flag = 1;
         }
         else 
         {
-            printf("%s leave the chatroom\n", np->name);
-            sprintf(send_buffer, "%s leave the chatroom", np->name);
+            printf("%s(%d) leave the chatroom\n", np->name, np->data);
+            sprintf(send_buffer, "%s(%d) leave the chatroom", np->name, np->data);
             leave_flag = 1;
         }
         send_to_all_clients(np, send_buffer);
