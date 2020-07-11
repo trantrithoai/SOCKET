@@ -31,7 +31,6 @@ void catch_ctrl_c_and_exit(int sig)
         root = root->link;
         free(tmp);
     }
-    printf("Bye. See you again!!!\n");
     exit(EXIT_SUCCESS);
 }
 
@@ -66,7 +65,7 @@ void* client_handler(void* p_client)
     {
         strncpy(np->name, nickname, LENGTH_NAME);
         printf("%s(%d) join the chatroom\n", np->name, np->data);
-        sprintf(send_buffer, "%s(%d) join the chatroom", np->name, np->data);
+        sprintf(send_buffer, "\r%s(%d) join the chatroom", np->name, np->data);
         send_to_all_clients(np, send_buffer);
     }
 
@@ -84,7 +83,7 @@ void* client_handler(void* p_client)
             {
                 continue;
             }
-            sprintf(send_buffer, "%s(%d): %s", np->name, np->data, recv_buffer);
+            sprintf(send_buffer, "\r%s(%d): %s", np->name, np->data, recv_buffer);
             printf("%s(%d): %s\n", np->name, np->data, recv_buffer);
 
             bzero(recv_buffer, LENGTH_MSG);
@@ -92,13 +91,13 @@ void* client_handler(void* p_client)
         else if (receive == 0 || strcmp(recv_buffer, "exit") == 0) 
         {
             printf("%s(%d) leave the chatroom\n", np->name, np->data);
-            sprintf(send_buffer, "%s(%d) leave the chatroom", np->name, np->data);
+            sprintf(send_buffer, "\r%s(%d) leave the chatroom", np->name, np->data);
             leave_flag = 1;
         }
         else 
         {
             printf("%s(%d) leave the chatroom\n", np->name, np->data);
-            sprintf(send_buffer, "%s(%d) leave the chatroom", np->name, np->data);
+            sprintf(send_buffer, "\r%s(%d) leave the chatroom", np->name, np->data);
             leave_flag = 1;
         }
         send_to_all_clients(np, send_buffer);
@@ -163,7 +162,8 @@ int main()
     root = newNode(server_sockfd, inet_ntoa(server_info.sin_addr));
     now = root;
 
-    while (1) {
+    while (true) 
+    {
         client_sockfd = accept(server_sockfd, (struct sockaddr*)&client_info, &c_addrlen);
 
         // Print Client IP
